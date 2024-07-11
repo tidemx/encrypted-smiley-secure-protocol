@@ -219,14 +219,6 @@ module.exports = {
       'A command to set the monetary value to be paid by the payout unit. Using protocol version 6, the host also sends a pre-test option byte (TEST_PAYOUT_AMOUT 0x19, PAYOUT_AMOUNT 0x58), which will determine if the command amount is tested or paid out. This is useful for multi-payout systems so that the ability to pay a split down amount can be tested before committing to actual payout.',
     example: "SSP.command('PAYOUT_AMOUNT', {amount: 100, country_code: 'RUB', test: false})",
   },
-  SET_DENOMINATION_LEVEL: {
-    code: 52,
-    encrypted: false,
-    args: true,
-    device: ['SMART Hopper'],
-    description:
-      'A command to increment the level of coins of a denomination stored in the hopper. The command is formatted with the command byte first, amount of coins to add as a 2-byte little endian, the value of coin as 2-byte little endian and (if using protocol version 6) the country code of the coin as 3 byte ASCII. The level of coins for a denomination can be set to zero by sending a zero level for that value. Note that protocol 6 version commands have been expanded to use a 4-byte coin value. The command data is formatted as byte 0 and byte 1 give the number of coins to add. In protocol version 5, the denomination is then sent as a two byte value. In protocol version greater than 5, the denomination is sent as 4 byte value plus 3 bytes ascii country code. In this example we want to increase the level of .50c coin by 20 using protocol version 5.',
-  },
   GET_DENOMINATION_LEVEL: {
     code: 53,
     encrypted: false,
@@ -515,4 +507,28 @@ module.exports = {
     description:
       'Resets the fixed encryption key to the device default. The device may have extra security requirements before it will accept this command (e.g. The Hopper must be empty) if these requirements are not met, the device will reply with Command Cannot be Processed. If successful, the device will reply OK, then reset. When it starts up the fixed key will be the default.',
   },
+  REPLENISH: {
+    code: 128,
+    encrypted: false,
+    args: true,
+    device: ['NV4000'],
+    description: 'Enables the replenishment cassette to send notes to the recyclers, requires the number of notes to be sent. The example replenishes 2 notes to the cassettes',
+    example: "SSP.command('REPLENISH', {value: 2})"
+  },
+  SET_DENOMINATION_LEVEL_RC:{
+    code: 52,
+    encrypted: true,
+    args: true,
+    device: ['NV4000'],
+    description: "Sets the denomination and number of banknotes stored in the replenishmente cassette",
+    example: "SSP.command('SET_DENOMINATION_LEVEL_RC', {value: 3, denomination: 50000, country_code: 'MXN'})"
+  },
+  MODULE_INFO:{
+    code: 115,
+    encrypted: true,
+    args: true,
+    device: ['NV4000'],
+    description: "Return information about installed modules, in the example we request information abput replenishment cassette",
+    example: "SSP.command('MODULE_INFO', {value: 0x16})"
+  }
 }

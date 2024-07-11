@@ -36,13 +36,13 @@ module.exports = class SSP extends EventEmitter {
 
     this.eventEmitter = new EventEmitter()
 
-    this.debug = param.debug || false
-    this.id = param.id || 0
-    this.timeout = param.timeout || 3000
-    this.encryptAllCommand = param.encryptAllCommand || true
+    this.debug = param?.debug || false
+    this.id = param?.id || 0
+    this.timeout = param?.timeout || 3000
+    this.encryptAllCommand = param?.encryptAllCommand || true
     this.encryptKey = null
     this.keys = {
-      fixedKey: param.fixedKey || '0123456701234567',
+      fixedKey: param?.fixedKey || '0123456701234567', //Default key for device
       generatorKey: null,
       modulusKey: null,
       hostRandom: null,
