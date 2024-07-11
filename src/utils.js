@@ -1,6 +1,6 @@
-const statusDesc = require('./events')
-const unitType = require('./device')
-const rejectNote = require('./note_events')
+const statusDesc = require('./status_desc')
+const unitType = require('./unit_type')
+const rejectNote = require('./reject_note')
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min
