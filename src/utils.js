@@ -42,6 +42,12 @@ function expmod(n, p, m) {
   return (r * nm) % m;
 }
 
+function int64LE(number) {
+  const buffer = Buffer.alloc(8)
+  buffer.writeBigInt64LE(BigInt(number))
+  return buffer
+}
+
 function uint64LE(number) {
   const buffer = Buffer.alloc(8)
   buffer.writeBigUint64LE(BigInt(number))
@@ -82,7 +88,7 @@ function translateRoute(x) {
 }
 
 function argsToByte(command, args, protocolVersion) {
-  protocolVersion ? protocolVersion : protocolVersion=6;
+  protocolVersion = protocolVersion || 6;
   if (args !== undefined) {
     if (command === 'SET_DENOMINATION_ROUTE') {
       if (protocolVersion >= 6) {
@@ -116,7 +122,7 @@ function argsToByte(command, args, protocolVersion) {
         return [...int32LE(args.value)].concat([...Buffer.from(args.country_code, 'ascii')])
       }
       return [...(args.isHopper ? int16LE(args.value) : int32LE(args.value))]
-    } else if (command === 'SET_DENOMINATION_LEVEL_RC') {
+    } else if (command === 'SET_DENOMINATION_LEVEL') {
       if (protocolVersion >= 6) {
         return [...int16LE(args.value)].concat([...int32LE(args.denomination)], [...Buffer.from(args.country_code, 'ascii')])
       }
@@ -308,10 +314,10 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
     } else if (currentCommand === 'GET_FIRMWARE_VERSION' || currentCommand === 'GET_DATASET_VERSION') {
       result.info.version = Buffer.from(data).toString()
     } else if (currentCommand === 'GET_ALL_LEVELS') {
-      result.info.counter = []
+      result.info.counter = {}
       for (let i = 0; i < data[0]; i++) {
         const tmp = data.slice(i * 9 + 1, i * 9 + 10)
-        result.info.counter[i] = {
+        result.info.counter[i+1] = {
           denomination_level: Buffer.from(tmp.slice(0, 2)).readInt16LE(),
           value: Buffer.from(tmp.slice(2, 6)).readInt32LE(),
           country_code: Buffer.from(tmp.slice(6, 9)).toString(),
@@ -682,5 +688,6 @@ module.exports = {
   randHexArray,
   argsToByte,
   uint64LE,
+  int64LE,
   expmod,
 }

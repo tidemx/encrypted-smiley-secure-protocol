@@ -219,6 +219,14 @@ module.exports = {
       'A command to set the monetary value to be paid by the payout unit. Using protocol version 6, the host also sends a pre-test option byte (TEST_PAYOUT_AMOUT 0x19, PAYOUT_AMOUNT 0x58), which will determine if the command amount is tested or paid out. This is useful for multi-payout systems so that the ability to pay a split down amount can be tested before committing to actual payout.',
     example: "SSP.command('PAYOUT_AMOUNT', {amount: 100, country_code: 'RUB', test: false})",
   },
+  SET_DENOMINATION_LEVEL:{
+    code: 52,
+    encrypted: true,
+    args: true,
+    device: ['NV4000'],
+    description: "Sets the denomination and number of banknotes stored in the replenishmente cassette",
+    example: "SSP.command('SET_DENOMINATION_LEVEL', {value: 3, denomination: 50000, country_code: 'MXN'})"
+  },
   GET_DENOMINATION_LEVEL: {
     code: 53,
     encrypted: false,
@@ -514,14 +522,6 @@ module.exports = {
     device: ['NV4000'],
     description: 'Enables the replenishment cassette to send notes to the recyclers, requires the number of notes to be sent. The example replenishes 2 notes to the cassettes',
     example: "SSP.command('REPLENISH', {value: 2})"
-  },
-  SET_DENOMINATION_LEVEL_RC:{
-    code: 52,
-    encrypted: true,
-    args: true,
-    device: ['NV4000'],
-    description: "Sets the denomination and number of banknotes stored in the replenishmente cassette",
-    example: "SSP.command('SET_DENOMINATION_LEVEL_RC', {value: 3, denomination: 50000, country_code: 'MXN'})"
   },
   MODULE_INFO:{
     code: 115,
