@@ -58,7 +58,6 @@ module.exports = class SSP extends EventEmitter {
     this.polling = false
     this.unit_type = null
 
-    this.port = param.port
     this.commandTimeout = null
   }
 
@@ -76,6 +75,9 @@ module.exports = class SSP extends EventEmitter {
 
       const parser = this.port.pipe(new ESSPProtocolParser({ id: this.id }))
       parser.on('data', buffer => {
+        if (this.debug) {
+          console.log('COM ->', chalk.yellow(buffer.toString('hex')), chalk.green(this.currentCommand))
+        }
         this.eventEmitter.emit(this.currentCommand, buffer)
       })
 
@@ -159,6 +161,10 @@ module.exports = class SSP extends EventEmitter {
     const tmp = [SEQ_SLAVE_ID].concat(LENGTH, DATA)
     const comandLine = Buffer.from([STX].concat(tmp, CRC16(tmp)).join(',').replace(/,127/g, ',127,127').split(','))
 
+    if (this.debug) {
+      console.log('COM <-', chalk.cyan(comandLine.toString('hex')), chalk.green(this.currentCommand), this.count)
+    }
+
     return comandLine
   }
 
@@ -235,7 +241,10 @@ module.exports = class SSP extends EventEmitter {
       }
       if (this.keys.key !== null && DATA[0] === 0x7e) {
         DATA = decrypt(this.encryptKey, Buffer.from(DATA.slice(1)))
-        
+        if (this.debug) {
+          console.log('Decrypted:', chalk.red(Buffer.from(DATA).toString('hex')))
+        }
+
         const eLENGTH = DATA[0]
         const eCOUNT = Buffer.from(DATA.slice(1, 5)).readInt32LE()
         DATA = DATA.slice(5, eLENGTH + 5)
@@ -271,6 +280,12 @@ module.exports = class SSP extends EventEmitter {
       this.encryptKey = Buffer.concat([int64LE(Buffer.from(this.keys.fixedKey, 'hex').readBigInt64BE()), int64LE(this.keys.key)])
 
       this.count = 0
+      if (this.debug) {
+        console.log('AES encrypt key:', chalk.red(`0x${Buffer.from(this.encryptKey).toString('hex')}`))
+        console.log('')
+        console.log(this.keys)
+        console.log('')
+      }
     }
   }
 

@@ -214,7 +214,7 @@ function argsToByte(command, args, protocolVersion) {
       byte += args.NO_HOLD_NOTE_ON_PAYOUT || args.OPTIMISE_FOR_PAYIN_SPEED ? 2 : 0
       return [byte]
     } else if (command === 'SET_FIXED_ENCRYPTION_KEY') {
-      return uint64LE(args.fixedKey)
+      return int64LE(args.fixedKey)
     } else if (command === 'COIN_MECH_OPTIONS') {
       return [args.ccTalk ? 1 : 0]
     }else if(command === 'REPLENISH'){
