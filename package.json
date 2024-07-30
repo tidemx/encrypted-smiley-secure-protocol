@@ -1,5 +1,5 @@
 {
-  "name": "encrypted-smiley-secure-protocol",
+  "name": "@tidemx/encrypted-smiley-secure-protocol",
   "version": "0.0.11",
   "description": "Node.JS library Encrypted Smiley ® Secure Protocol (eSSP, SSP)",
   "main": "src/index.js",
