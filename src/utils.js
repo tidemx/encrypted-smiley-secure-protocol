@@ -681,5 +681,4 @@ module.exports = {
   argsToByte,
   uint64LE,
   int64LE,
-  expmod,
 }
