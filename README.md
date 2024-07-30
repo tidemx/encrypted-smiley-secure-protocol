@@ -1,5 +1,12 @@
 # encrypted-smiley-secure-protocol
 
+# Disclaimer
+
+This project is a fork of the [encrypted-smiley-secure-protocol](https://github.com/tidemx/encrypted-smiley-secure-protocol) repository. The main purpose of this fork is to add compatibility with the NV4000 deivce.
+
+---
+
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fskokov3812%2Fencrypted-smiley-secure-protocol.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fskokov3812%2Fencrypted-smiley-secure-protocol?ref=badge_shield)
 
 Node.JS library Encrypted Smiley ® Secure Protocol (eSSP, SSP)

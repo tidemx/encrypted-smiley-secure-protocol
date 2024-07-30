@@ -12,8 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skokov3812/encrypted-smiley-secure-protocol.git"
+    "url": "git+https://github.com/tidemx/encrypted-smiley-secure-protocol.git"
   },
+  "files": [
+    "src/"
+  ],
   "keywords": [
     "eSSP",
     "SSP",
@@ -26,9 +29,9 @@
   "author": "Roman Skokov (skokov3812)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/skokov3812/encrypted-smiley-secure-protocol/issues"
+    "url": "https://github.com/tidemx/encrypted-smiley-secure-protocol/issues"
   },
-  "homepage": "https://github.com/skokov3812/encrypted-smiley-secure-protocol#readme",
+  "homepage": "https://github.com/tidemx/encrypted-smiley-secure-protocol#readme",
   "dependencies": {
     "chalk": "^2.4.2",
     "debug": "^4.3.1",
