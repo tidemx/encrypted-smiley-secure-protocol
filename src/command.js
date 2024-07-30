@@ -223,8 +223,8 @@ module.exports = {
     code: 52,
     encrypted: true,
     args: true,
-    device: ['NV4000'],
-    description: "Sets the denomination and number of banknotes stored in the replenishmente cassette",
+    device: ['SMART Hopper, Smart System, NV4000'],
+    description: "This command allows to increment the denomination level stored in a device. For example, for a NV4000 sets the denomination and number of banknotes stored in the replenishmente cassette, for a SMART Hopper system increments the level of coins of a denomination stored in the hopper",
     example: "SSP.command('SET_DENOMINATION_LEVEL', {value: 3, denomination: 50000, country_code: 'MXN'})"
   },
   GET_DENOMINATION_LEVEL: {

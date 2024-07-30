@@ -33,14 +33,6 @@ function randHexArray(length = 0) {
   return array
 }
 
-function expmod(n, p, m) {
-  if (p == 0n) return 1n;
-  const nm = n % m;
-  let r = expmod(nm, p / 2n, m);
-  r = (r * r) % m;
-  if (p % 2n == 0n) return r;
-  return (r * nm) % m;
-}
 
 function int64LE(number) {
   const buffer = Buffer.alloc(8)
