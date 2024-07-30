@@ -1,4 +1,24 @@
 module.exports = {
+  113: {
+    name: 'REPLENISHED',
+    description: 'Once the replenishing finished, shows the total value that device has replenished'
+  },
+  114: {
+    name: 'REPLENISH_STORED',
+    description: 'Event received when the device has completed the Replenish Stored Notes (0x80) command'
+  },
+  116: {
+    name: 'NOTE_TO_RC_TRAY',
+    description: 'When a rejected note from replenishment cassette is moved to the reject tray of the cassette'
+  },  
+  117: {
+    name: 'REPLENISHMENT_CASSETTE_REMOVED',
+    description: 'NV4000 replenisment cassette removed'
+  },  
+  118: {
+    name: 'REPLENISHMENT_CASSETTE_REPLACED',
+    description: 'NV4000 replenisment cassette replaced'
+  },
   176: {
     name: 'JAM_RECOVERY',
     description:
@@ -90,7 +110,7 @@ module.exports = {
   },
   210: {
     name: 'DISPENSED',
-    description: 'The device has completed its pay-out request. The final value paid is given in the event data.',
+    description: 'The device has completed its pay-out request.',
   },
   213: {
     name: 'JAMMED',

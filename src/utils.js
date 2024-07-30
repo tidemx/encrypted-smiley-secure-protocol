@@ -33,9 +33,16 @@ function randHexArray(length = 0) {
   return array
 }
 
+
 function int64LE(number) {
   const buffer = Buffer.alloc(8)
   buffer.writeBigInt64LE(BigInt(number))
+  return buffer
+}
+
+function uint64LE(number) {
+  const buffer = Buffer.alloc(8)
+  buffer.writeBigUint64LE(BigInt(number))
   return buffer
 }
 
@@ -51,13 +58,35 @@ function int16LE(number) {
   return buffer
 }
 
+function translateRoute(x) {
+  switch (x) {
+  case 'payout':
+    return 0
+  case 'cashbox':
+    return 0x01
+  case 'recycler1':
+    return 0x11
+  case 'recycler2':
+    return 0x12
+  case 'recycler3':
+    return 0x13
+  case 'recycler4':
+    return 0x14
+  case 'cassette':
+    return 0x16
+  default:
+    throw new Error('bad route')
+  }
+}
+
 function argsToByte(command, args, protocolVersion) {
+  protocolVersion = protocolVersion || 6;
   if (args !== undefined) {
     if (command === 'SET_DENOMINATION_ROUTE') {
       if (protocolVersion >= 6) {
-        return [args.route === 'payout' ? 0 : 1].concat([...int32LE(args.value)], [...Buffer.from(args.country_code, 'ascii')])
+        return [translateRoute(args.route)].concat([...int32LE(args.value)], [...Buffer.from(args.country_code, 'ascii')])
       }
-      return [args.route === 'payout' ? 0 : 1].concat([...(args.isHopper ? int16LE(args.value) : int32LE(args.value))])
+      return [translateRoute(args.route)].concat([...(args.isHopper ? int16LE(args.value) : int32LE(args.value))])
     } else if (command === 'SET_CHANNEL_INHIBITS') {
       return [
         ...int16LE(
@@ -132,7 +161,7 @@ function argsToByte(command, args, protocolVersion) {
       return [...int32LE(args.amount)]
     } else if (command === 'FLOAT_AMOUNT') {
       if (protocolVersion >= 6) {
-        return [...int16LE(args.min_possible_payout)].concat(
+        return [...int32LE(args.min_possible_payout)].concat(
           [...int32LE(args.amount)],
           [...Buffer.from(args.country_code, 'ascii')],
           [args.test ? 0x19 : 0x58]
@@ -180,6 +209,10 @@ function argsToByte(command, args, protocolVersion) {
       return int64LE(args.fixedKey)
     } else if (command === 'COIN_MECH_OPTIONS') {
       return [args.ccTalk ? 1 : 0]
+    }else if(command === 'REPLENISH'){
+      return [...int16LE(args.value)]
+    }else if(command === 'MODULE_INFO'){
+      return [args.value]
     }
 
     return []
@@ -276,7 +309,7 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
       result.info.counter = {}
       for (let i = 0; i < data[0]; i++) {
         const tmp = data.slice(i * 9 + 1, i * 9 + 10)
-        result.info.counter[i + 1] = {
+        result.info.counter[i+1] = {
           denomination_level: Buffer.from(tmp.slice(0, 2)).readInt16LE(),
           value: Buffer.from(tmp.slice(2, 6)).readInt32LE(),
           country_code: Buffer.from(tmp.slice(6, 9)).toString(),
@@ -347,10 +380,37 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
       result.info.levelCheck = tmp[1] === 0 || tmp[1] === undefined ? false : true
       result.info.motorSpeed = tmp[2] === 0 || tmp[2] === undefined ? false : true
       result.info.cashBoxPayAcive = tmp[3] === 0 || tmp[3] === undefined ? false : true
-    } else if (currentCommand === 'POLL' || currentCommand === 'POLL_WITH_ACK') {
+    }else if(currentCommand === 'MODULE_INFO'){
+      //TODO parse all modules
+      switch (data[0]){
+        case 0x03:
+          const moduleFlags = data[11].toString(2).padStart(8,'0')
+          result.info.module = "Replenishment Cassette"
+          result.info.note_value = Buffer.from(data.slice(2,6)).readInt32LE()
+          result.info.note_currency = Buffer.from(data.slice(6,9)).toString()
+          result.info.level = Buffer.from(data.slice(9,11)).readInt16LE()
+          result.info.flags = {
+            cassette_almost_empty: moduleFlags[0] === 1,
+            cassette_is_empty: moduleFlags[1] === 1,
+            tray_is_full: moduleFlags[2] === 1,
+            single_denomination_mode: moduleFlags[4] === 1,
+          }
+          break;
+        default:
+          console.log("")
+      }
+      const moduleStatus = data[1].toString(2).padStart(8,'0')
+      result.info.status = {
+        device_out_of_service: moduleStatus[0] === 1,
+        device_has_incompatible_currency: moduleStatus[1] === 1,
+        device_requires_emptying: moduleStatus[2] === 1,
+        device_is_full: moduleStatus[3] === 1,
+      }
+
+    }
+    else if (currentCommand === 'POLL' || currentCommand === 'POLL_WITH_ACK') {
       if (data[0] !== undefined && statusDesc[data[0]] !== undefined) {
         result.info = []
-
         let k = 0
         while (k < data.length) {
           const el = data[k]
@@ -394,9 +454,20 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
               info.channel = chunk[1]
               k += 2
             }
-          } else if (
+          }
+          else if(info.name === 'REPLENISHED_STORED'){
+            k+=10
+          } 
+          else if(info.name === 'REPLENISHED'){
+            k+=10
+          }
+          else if(info.name === 'DISPENSED'){
+            info.amount = Buffer.from(chunk.slice(2,6)).readInt32LE()
+            info.currency = Buffer.from(chunk.slice(6,9)).toString()
+            k+=10
+          }
+          else if (
             info.name === 'DISPENSING' ||
-            info.name === 'DISPENSED' ||
             info.name === 'JAMMED' ||
             info.name === 'HALTED' ||
             info.name === 'FLOATING' ||
@@ -412,7 +483,7 @@ function parseData(data, currentCommand, protocolVersion, deviceUnitType) {
             info.name === 'NOTE_PAID_INTO_STACKER_AT_POWER-UP' ||
             info.name === 'NOTE_DISPENSED_AT_POWER-UP'
           ) {
-            if (protocolVersion >= 6) {
+            if (protocolVersion >= 6) { 
               const count = chunk[1]
               info.value = []
               for (let i = 0; i < count; i++) {
@@ -608,5 +679,7 @@ module.exports = {
   CRC16,
   randHexArray,
   argsToByte,
+  uint64LE,
   int64LE,
+  expmod,
 }

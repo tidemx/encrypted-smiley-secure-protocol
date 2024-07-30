@@ -1,6 +1,7 @@
 const { SerialPort } = require('serialport')
 const EventEmitter = require('events')
 const crypto = require('crypto')
+const dh = require('diffie-hellman/browser')
 const { parseData, CRC16, randHexArray, argsToByte, int64LE } = require('./utils')
 const commandList = require('./command')
 const chalk = require('chalk')
@@ -42,7 +43,7 @@ module.exports = class SSP extends EventEmitter {
     this.encryptAllCommand = param.encryptAllCommand || true
     this.encryptKey = null
     this.keys = {
-      fixedKey: param.fixedKey || '0123456701234567',
+      fixedKey: param.fixedKey || '0123456701234567', //Default key for device
       generatorKey: null,
       modulusKey: null,
       hostRandom: null,
@@ -110,9 +111,9 @@ module.exports = class SSP extends EventEmitter {
 
   initEncryption() {
     return Promise.all([
-      BigInt(crypto.createDiffieHellman(16).getPrime().readUInt16BE()),
-      BigInt(crypto.createDiffieHellman(16).getPrime().readUInt16BE()),
-      BigInt(crypto.createDiffieHellman(16).getPrime().readUInt16BE()),
+      BigInt(dh.createDiffieHellman(16).getPrime().readUInt16BE()),
+      BigInt(dh.createDiffieHellman(16).getPrime().readUInt16BE()),
+      BigInt(dh.createDiffieHellman(16).getPrime().readUInt16BE()),
     ])
       .then(res => {
         this.keys.generatorKey = res[0]
@@ -177,6 +178,9 @@ module.exports = class SSP extends EventEmitter {
       }
       return resolve(this.newEvent(command))
     }).then(res => {
+      if(this.debug){
+        console.log("Current response: ", res)
+      }
       return res.status === 'TIMEOUT' ? this.getPromise(buffer, command) : res
     })
   }
@@ -240,6 +244,7 @@ module.exports = class SSP extends EventEmitter {
         if (this.debug) {
           console.log('Decrypted:', chalk.red(Buffer.from(DATA).toString('hex')))
         }
+
         const eLENGTH = DATA[0]
         const eCOUNT = Buffer.from(DATA.slice(1, 5)).readInt32LE()
         DATA = DATA.slice(5, eLENGTH + 5)
@@ -247,10 +252,6 @@ module.exports = class SSP extends EventEmitter {
       }
 
       const parsedData = parseData(DATA, this.currentCommand, this.protocol_version, this.unit_type)
-
-      if (this.debug) {
-        console.log(parsedData)
-      }
 
       if (parsedData.success) {
         if (this.currentCommand === 'REQUEST_KEY_EXCHANGE') {
